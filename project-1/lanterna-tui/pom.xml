@@ -10,15 +10,16 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>module-2</artifactId>
+    <artifactId>lanterna-tui</artifactId>
     <packaging>jar</packaging>
+    <name>lanterna-tui</name>
 
     <dependencies>
         <!-- Lanterna TUI Library -->
         <dependency>
-            <groupId>com.project-1</groupId>
-            <artifactId>lanterna-tui</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>com.googlecode.lanterna</groupId>
+            <artifactId>lanterna</artifactId>
+            <version>3.1.2</version>
         </dependency>
 
         <!-- JUnit for testing -->
