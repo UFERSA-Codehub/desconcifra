@@ -27,9 +27,11 @@ public class TUIManager {
 
         DefaultTerminalFactory factory = new DefaultTerminalFactory();
         terminal = factory.createTerminal();
-
+        terminal.setCursorVisible(false);
+        //CHECK FOR PRIVATE MODE
         screen = new TerminalScreen(terminal);
         screen.startScreen();
+        screen.setCursorPosition(null); // Hide cursor
 
         textGraphics = screen.newTextGraphics();
 
@@ -46,6 +48,7 @@ public class TUIManager {
 
         try {
         screen.stopScreen();
+        //terminal.exitPrivateMode();
         terminal.close();
         
         } catch (IOException e) {
@@ -158,12 +161,7 @@ public class TUIManager {
             return;
         }
 
-        try {
-            terminal.setCursorVisible(false);
-        } catch (IOException e) {
-            //throw new IOException("Error while hiding cursor", e);
-            System.err.println("Error while hiding cursor: " + e.getMessage());
-        }
+        screen.setCursorPosition(null);
     }
 
     public void showCursor() {
@@ -171,11 +169,23 @@ public class TUIManager {
             return;
         }
 
-        try {
-            terminal.setCursorVisible(true);
-        } catch (IOException e) {
-            //throw new IOException("Error while showing cursor", e);
-            System.err.println("Error while showing cursor: " + e.getMessage());
+        screen.setCursorPosition(new TerminalPosition(0, 0));
         }
+
+    public void fillScreen(TextColor bgColor){
+        if (!isInitialized || textGraphics == null) {
+            return;
+        }
+
+        TerminalSize size = getTerminalSize();
+
+        textGraphics.setBackgroundColor(bgColor);
+
+        textGraphics.fillRectangle(
+            new TerminalPosition(0, 0),
+            size,
+            ' '
+        );
     }
+
 }

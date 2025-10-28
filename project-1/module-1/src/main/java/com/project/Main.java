@@ -7,6 +7,8 @@ import com.project.tui.TUIConstants;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 
+import com.googlecode.lanterna.TextColor;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,11 +71,10 @@ class TuiTestApp {
 
     private void displayWelcomeScreen() {
         tui.clearScreen();
+        tui.fillScreen(TextColor.ANSI.BLACK);
         tui.refresh();
-        tui.hideCursor();
 
         TextGraphics graphics = tui.getTextGraphics();
-        graphics.setBackgroundColor(null);
         tui.hideCursor();
 
         // Title
