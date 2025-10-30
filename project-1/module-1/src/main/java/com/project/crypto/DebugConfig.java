@@ -2,7 +2,7 @@ package com.project.crypto;
 
 public class DebugConfig {
     
-    public static final boolean DEBUG_MODE = false;
+    public static final boolean DEBUG_MODE = true;
     
     private DebugConfig() {
     }

@@ -1,6 +1,7 @@
 package com.project.crypto;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.KeyGenerator;
 import javax.crypto.Cipher;
 import java.security.*;
@@ -39,12 +40,23 @@ import javax.crypto.NoSuchPaddingException;
             // Encripta mensagem
             try {
                 cifrador = Cipher
-                        .getInstance("AES/ECB/PKCS5Padding");
-                cifrador.init(Cipher.ENCRYPT_MODE, chave);
+                        .getInstance("AES/CBC/PKCS5Padding");
+
+                byte[] iv = new byte[16];
+                SecureRandom random = new SecureRandom();
+                random.nextBytes(iv);
+                IvParameterSpec ivParams = new IvParameterSpec(iv);
+
+                cifrador.init(Cipher.ENCRYPT_MODE, chave, ivParams);
                 bytesMensagemCifrada = cifrador.doFinal(textoAberto.getBytes());
+
+                byte[] mensagemComIv = new byte[iv.length + bytesMensagemCifrada.length];
+                System.arraycopy(iv, 0, mensagemComIv, 0, iv.length);
+                System.arraycopy(bytesMensagemCifrada, 0, mensagemComIv, iv.length, bytesMensagemCifrada.length);
+
                 mensagemCifrada = Base64
                         .getEncoder()
-                        .encodeToString(bytesMensagemCifrada);
+                        .encodeToString(mensagemComIv);
                 //System.out.println(">> Mensagem cifrada = "
                 //        + mensagemCifrada);
             } catch (NoSuchAlgorithmException e) {
@@ -57,6 +69,8 @@ import javax.crypto.NoSuchPaddingException;
                 e.printStackTrace();
             } catch (NoSuchPaddingException e) {
                 e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
             }
             return mensagemCifrada;
         }
@@ -64,13 +78,20 @@ import javax.crypto.NoSuchPaddingException;
         public String decifrar(String textoCifrado) {
             String mensagem = null;
             // Decriptação
-            byte[] bytesMensagemCifrada = Base64
+            byte[] bytesMensagemCifradaComIv = Base64
                     .getDecoder()
                     .decode(textoCifrado);
             Cipher decriptador;
             try {
-                decriptador = Cipher.getInstance("AES/ECB/PKCS5Padding");
-                decriptador.init(Cipher.DECRYPT_MODE, chave);
+                byte[] iv = new byte[16];
+                System.arraycopy(bytesMensagemCifradaComIv, 0, iv, 0, iv.length);
+                IvParameterSpec ivParams = new IvParameterSpec(iv);
+
+                byte[] bytesMensagemCifrada = new byte[bytesMensagemCifradaComIv.length - iv.length];
+                System.arraycopy(bytesMensagemCifradaComIv, iv.length, bytesMensagemCifrada, 0, bytesMensagemCifrada.length);
+
+                decriptador = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                decriptador.init(Cipher.DECRYPT_MODE, chave, ivParams);
                 byte[] bytesMensagemDecifrada = decriptador.doFinal(bytesMensagemCifrada);
                 mensagem = new String(bytesMensagemDecifrada);
                 /*
@@ -86,6 +107,8 @@ import javax.crypto.NoSuchPaddingException;
             } catch (IllegalBlockSizeException e) {
                 e.printStackTrace();
             } catch (BadPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
                 e.printStackTrace();
             }
             return mensagem;

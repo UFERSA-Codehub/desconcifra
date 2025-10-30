@@ -18,22 +18,30 @@ public class ClientImpl implements Client {
     private BufferedReader input;
 
     private boolean isRegister;
+    private boolean isMalicious;
     private boolean running;
 
     private Thread listenerThread;
 
     public ClientImpl(String[] args) {
-        this.isRegister = parseArgs(args);
+       parseArgs(args);
         this.running = false;
+
+        if(this.isMalicious){
+            com.project.crypto.KeyManager.corruptHMACKey();
+            System.out.println("⚠️ Modo Malicioso Ativado: Chave HMAC será corrompida.");
+        }
     }
 
-    private boolean parseArgs(String[] args) {
+    private void parseArgs(String[] args) {
         for (String arg : args) {
             if (arg.equalsIgnoreCase("--register")) {
-                return true;
+                this.isRegister = true;
+            }
+            if (arg.equalsIgnoreCase("--malicious")) {
+                this.isMalicious = true;
             }
         }
-        return false;
     }
 
     private void startListener() {
@@ -109,6 +117,9 @@ public class ClientImpl implements Client {
         System.out.println("╔════════════════════════════════╗");
         System.out.println("║ Mode: " + (isRegister ? "REGISTER (Full Access)   ║" : "REQUEST (Read-Only)      ║"));
         System.out.println("╚════════════════════════════════╝");
+        if (isMalicious){
+            System.out.println("⚠️  MALICIOUS MODE ENABLED ⚠️" );
+        }
         if (DebugConfig.DEBUG_MODE) {
             System.out.println("🐛 DEBUG MODE: ENABLED");
         }
@@ -228,6 +239,8 @@ public class ClientImpl implements Client {
             System.err.printf("Erro ao desconectar: %s%n", e.getMessage());
         }
     }
+
+
 
     public static void main(String[] args) {
         ClientImpl client = new ClientImpl(args);
