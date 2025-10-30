@@ -16,7 +16,7 @@
         <!-- Lanterna TUI Library -->
         <dependency>
             <groupId>com.project-1</groupId>
-            <artifactId>lanterna-tui</artifactId>
+            <artifactId>lanterna-gui</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
