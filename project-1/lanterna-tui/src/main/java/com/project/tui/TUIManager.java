@@ -10,6 +10,8 @@ import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
+import com.project.tui.layout.LayoutManager;
+import com.project.tui.layout.LogLevel;
 
 import java.io.IOException;
 
@@ -18,6 +20,7 @@ public class TUIManager {
     private Terminal terminal;
     private Screen screen;
     private TextGraphics textGraphics;
+    private LayoutManager layoutManager;
     private boolean isInitialized = false;
 
     public void initialize() throws IOException {
@@ -37,6 +40,8 @@ public class TUIManager {
 
         textGraphics.setForegroundColor(TUIConstants.DEFAULT_FG_COLOR);
         textGraphics.setBackgroundColor(TUIConstants.DEFAULT_BG_COLOR);
+
+        layoutManager = new LayoutManager();
 
         isInitialized = true;
     }
@@ -186,6 +191,83 @@ public class TUIManager {
             size,
             ' '
         );
+    }
+
+    // Layout Management Methods
+
+    /**
+     * Draws the layout structure with header and footer.
+     * 
+     * @param headerText the text to display in the header (app name or filename)
+     */
+    public void drawLayout(String headerText) {
+        if (!isInitialized || layoutManager == null) {
+            return;
+        }
+
+        layoutManager.drawLayout(screen, headerText);
+    }
+
+    /**
+     * Updates the status message in the footer.
+     * 
+     * @param status the status message to display
+     */
+    public void setLayoutStatus(String status) {
+        if (!isInitialized || layoutManager == null) {
+            return;
+        }
+
+        layoutManager.setStatus(status);
+    }
+
+    /**
+     * Adds a log entry to the footer with specified level and message.
+     * 
+     * @param level the log level (INFO, WARNING, ERROR)
+     * @param message the log message
+     */
+    public void addLayoutLog(LogLevel level, String message) {
+        if (!isInitialized || layoutManager == null) {
+            return;
+        }
+
+        layoutManager.addLog(level, message);
+    }
+
+    /**
+     * Clears the current log entry from the footer.
+     */
+    public void clearLayoutLog() {
+        if (!isInitialized || layoutManager == null) {
+            return;
+        }
+
+        layoutManager.clearLog();
+    }
+
+    /**
+     * Clears the current status message from the footer.
+     */
+    public void clearLayoutStatus() {
+        if (!isInitialized || layoutManager == null) {
+            return;
+        }
+
+        layoutManager.clearStatus();
+    }
+
+    /**
+     * Gets the usable content area (excludes header, footer, and margins).
+     * 
+     * @return ContentArea object with position and size information
+     */
+    public LayoutManager.ContentArea getContentArea() {
+        if (!isInitialized || layoutManager == null) {
+            return null;
+        }
+
+        return layoutManager.getContentArea(getTerminalSize());
     }
 
 }

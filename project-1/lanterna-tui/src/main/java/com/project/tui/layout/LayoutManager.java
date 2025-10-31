@@ -7,101 +7,135 @@ import com.googlecode.lanterna.screen.Screen;
 import com.project.tui.TUIConstants;
 import com.project.tui.model.LogEntry;
 
-/**
- * Manages the TUI layout structure with fixed header, content area, and footer.
- * Layout structure:
- * - Header: 3 rows (title/filename + separator + blank)
- * - Content: Variable height with 2-column and 2-row margins
- * - Footer: 1 row (status message | log entry)
- */
 public class LayoutManager {
     private String currentStatus = "";
     private LogEntry currentLog = null;
 
-    /**
-     * Draws the complete layout structure including header and footer.
-     * 
-     * @param screen the screen to draw on
-     * @param headerText the text to display in the header (app name or filename)
-     */
     public void drawLayout(Screen screen, String headerText) {
         TextGraphics graphics = screen.newTextGraphics();
-        graphics.setBackgroundColor(null); // Use terminal default
+        graphics.setBackgroundColor(null);
         TerminalSize size = screen.getTerminalSize();
 
-        // Draw header
         drawHeader(graphics, size, headerText);
-
-        // Draw footer
+        drawSideBorders(graphics, size);
         drawFooter(graphics, size);
     }
 
-    /**
-     * Draws the header section (3 rows).
-     * Row 0: Header text (app name or filename)
-     * Row 1: Separator line
-     * Row 2: Blank row
-     */
     private void drawHeader(TextGraphics graphics, TerminalSize size, String headerText) {
         int width = size.getColumns();
 
-        // Row 0: Header text (centered or left-aligned)
-        graphics.setForegroundColor(TUIConstants.COLOR_HEADER);
-        String displayText = headerText != null ? headerText : "Application";
-        graphics.putString(LayoutConfig.LEFT_MARGIN, 0, displayText);
+        graphics.setForegroundColor(TUIConstants.HEADER_COLOR);
 
-        // Row 1: Separator line
-        graphics.setForegroundColor(TUIConstants.COLOR_BORDER);
-        StringBuilder separator = new StringBuilder();
-        for (int i = 0; i < width; i++) {
-            separator.append("─");
+        StringBuilder topBorder = new StringBuilder();
+        topBorder.append(TUIConstants.TOP_LEFT_CORNER);
+        for (int i = 1; i < width - 1; i++) {
+            topBorder.append(TUIConstants.H_LINE);
         }
-        graphics.putString(0, 1, separator.toString());
+        topBorder.append(TUIConstants.TOP_RIGHT_CORNER);
+        graphics.putString(0, 0, topBorder.toString());
 
-        // Row 2: Blank row (no action needed)
+        graphics.putString(0, 1, String.valueOf(TUIConstants.V_LINE));
+        graphics.putString(LayoutConfig.LEFT_MARGIN, 1, headerText != null ? headerText : "Application");
+        graphics.putString(width - 1, 1, String.valueOf(TUIConstants.V_LINE));
+
+        graphics.setForegroundColor(TUIConstants.MENU_SELECTED_BG_COLOR);
+        StringBuilder separator = new StringBuilder();
+        separator.append("├");
+        for (int i = 1; i < width - 1; i++) {
+            separator.append(TUIConstants.H_LINE);
+        }
+        separator.append("┤");
+        graphics.putString(0, 2, separator.toString());
     }
 
-    /**
-     * Draws the footer section (1 row at bottom).
-     * Format: "Status: [message] | Log: [level]: [message]"
-     */
+    private void drawSideBorders(TextGraphics graphics, TerminalSize size) {
+        int height = size.getRows();
+        int leftX = 0;
+        int rightX = size.getColumns() - 1;
+
+        graphics.setForegroundColor(TUIConstants.HEADER_COLOR);
+
+        int startRow = LayoutConfig.HEADER_HEIGHT;
+        int endRow = height - LayoutConfig.FOOTER_HEIGHT;
+
+        for (int row = startRow; row < endRow; row++) {
+            graphics.putString(leftX, row, "│");
+            graphics.putString(rightX, row, "│");
+        }
+    }
+
     private void drawFooter(TextGraphics graphics, TerminalSize size) {
         int width = size.getColumns();
-        int footerRow = size.getRows() - LayoutConfig.FOOTER_HEIGHT;
+        int separatorRow = size.getRows() - 3;
+        int footerRow = size.getRows() - 2;
+        int bottomRow = size.getRows() - 1;
 
-        // Clear the footer row first
+        int centerX = width / 2;
+
+        graphics.setForegroundColor(TUIConstants.HEADER_COLOR);
+        StringBuilder separator = new StringBuilder();
+        separator.append("├");
+        for (int i = 1; i < width - 1; i++) {
+            if (i == centerX) {
+                separator.append("┬");
+            } else {
+                separator.append(TUIConstants.H_LINE);
+            }
+        }
+        separator.append("┤");
+        graphics.putString(0, separatorRow, separator.toString());
+
+        graphics.setForegroundColor(TUIConstants.DEFAULT_FG_COLOR);
         StringBuilder blank = new StringBuilder();
         for (int i = 0; i < width; i++) {
             blank.append(" ");
         }
         graphics.putString(0, footerRow, blank.toString());
 
-        // Build footer content
-        StringBuilder footer = new StringBuilder();
-        footer.append("Status: ").append(currentStatus);
+        graphics.setForegroundColor(TUIConstants.HEADER_COLOR);
+        graphics.putString(0, footerRow, "│");
+        graphics.putString(width - 1, footerRow, "│");
 
-        if (currentLog != null) {
-            footer.append(" | Log: ").append(currentLog.toString());
+        String leftSide = "Status: " + currentStatus;
+        if (leftSide.length() > centerX - 3) {
+            leftSide = leftSide.substring(0, centerX - 3);
         }
 
-        // Draw footer with appropriate color
-        graphics.setForegroundColor(TUIConstants.COLOR_TEXT);
-        graphics.putString(LayoutConfig.LEFT_MARGIN, footerRow, footer.toString());
+        String rightSide = "";
+        if (currentLog != null) {
+            rightSide = "Log: " + currentLog.toString();
+        }
+        if (rightSide.length() > centerX - 3) {
+            rightSide = rightSide.substring(0, centerX - 3);
+        }
+
+        graphics.setForegroundColor(TUIConstants.DEFAULT_FG_COLOR);
+        graphics.putString(LayoutConfig.LEFT_MARGIN, footerRow, leftSide);
+
+        graphics.setForegroundColor(TUIConstants.HEADER_COLOR);
+        graphics.putString(centerX, footerRow, "│");
+
+        graphics.setForegroundColor(TUIConstants.DEFAULT_FG_COLOR);
+        graphics.putString(centerX + 2, footerRow, rightSide);
+
+        graphics.setForegroundColor(TUIConstants.HEADER_COLOR);
+        StringBuilder bottomBorder = new StringBuilder();
+        bottomBorder.append(TUIConstants.BOTTOM_LEFT_CORNER);
+        for (int i = 1; i < width - 1; i++) {
+            if (i == centerX) {
+                bottomBorder.append("┴");
+            } else {
+                bottomBorder.append(TUIConstants.H_LINE);
+            }
+        }
+        bottomBorder.append(TUIConstants.BOTTOM_RIGHT_CORNER);
+        graphics.putString(0, bottomRow, bottomBorder.toString());
     }
 
-    /**
-     * Calculates and returns the usable content area dimensions.
-     * This area excludes the header, footer, and margins.
-     * 
-     * @param terminalSize the current terminal size
-     * @return ContentArea object with position and size of usable space
-     */
     public ContentArea getContentArea(TerminalSize terminalSize) {
-        // Calculate content start position (after header + top margin)
         int startX = LayoutConfig.LEFT_MARGIN;
         int startY = LayoutConfig.HEADER_HEIGHT + LayoutConfig.TOP_MARGIN;
 
-        // Calculate content dimensions
         int contentWidth = terminalSize.getColumns() 
                          - LayoutConfig.LEFT_MARGIN 
                          - LayoutConfig.RIGHT_MARGIN;
@@ -118,51 +152,26 @@ public class LayoutManager {
         );
     }
 
-    /**
-     * Updates the status message in the footer.
-     * 
-     * @param status the status message to display
-     */
     public void setStatus(String status) {
         this.currentStatus = status != null ? status : "";
     }
 
-    /**
-     * Updates the log entry in the footer.
-     * 
-     * @param logEntry the log entry to display
-     */
     public void setLog(LogEntry logEntry) {
         this.currentLog = logEntry;
     }
 
-    /**
-     * Convenience method to add a log with level and message.
-     * 
-     * @param level the log level
-     * @param message the log message
-     */
     public void addLog(LogLevel level, String message) {
         this.currentLog = new LogEntry(level, message);
     }
 
-    /**
-     * Clears the current log entry.
-     */
     public void clearLog() {
         this.currentLog = null;
     }
 
-    /**
-     * Clears the current status message.
-     */
     public void clearStatus() {
         this.currentStatus = "";
     }
 
-    /**
-     * Represents the usable content area with position and size.
-     */
     public static class ContentArea {
         private final TerminalPosition position;
         private final TerminalSize size;
