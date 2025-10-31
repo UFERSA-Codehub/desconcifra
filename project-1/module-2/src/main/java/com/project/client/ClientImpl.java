@@ -18,23 +18,30 @@ public class ClientImpl implements Client {
     private BufferedReader input;
 
     private boolean isRegister;
+    private boolean isMalicious;
     private boolean running;
 
     private Thread listenerThread;
     private Message pendingCalculateMessage;
 
     public ClientImpl(String[] args) {
-        this.isRegister = parseArgs(args);
+        parseArgs(args);
         this.running = false;
+        
+        if (isMalicious) {
+            com.project.crypto.KeyManager.corruptHMACKey();
+        }
     }
 
-    private boolean parseArgs(String[] args) {
+    private void parseArgs(String[] args) {
         for (String arg : args) {
             if (arg.equalsIgnoreCase("--register")) {
-                return true;
+                //this.isRegister = true; Não faça nada, não precisa de registrador
+            }
+            if (arg.equalsIgnoreCase("--malicious")) {
+                this.isMalicious = true;
             }
         }
-        return false;
     }
 
     private void startListener() {
@@ -117,10 +124,13 @@ public class ClientImpl implements Client {
         System.out.println("╔════════════════════════════════╗");
         System.out.println("║ Mode: " + (isRegister ? "REGISTER (Full Access)   ║" : "CLIENT (Service User)    ║"));
         System.out.println("╚════════════════════════════════╝");
-        if (DebugConfig.DEBUG_MODE) {
-            System.out.println("🐛 DEBUG MODE: ENABLED");
+        if (isMalicious) {
+            System.out.println("⚠️  MALICIOUS MODE ENABLED ⚠️");
         }
-        System.out.println("\n📋 Available Commands:");
+        if (DebugConfig.DEBUG_MODE) {
+            System.out.println(" DEBUG MODE: ENABLED");
+        }
+        System.out.println("\n Available Commands:");
         System.out.println("  CALCULATE <op> <n1> <n2>       - Calculate (ADD/SUB/MUL/DIV)");
         if (isRegister) {
             System.out.println("  REGISTER <serviceName> <info>  - Register service");
@@ -236,7 +246,7 @@ public class ClientImpl implements Client {
         int port = Integer.parseInt(parts[1]);
 
         if (DebugConfig.DEBUG_MODE) {
-            System.out.printf("🔄 Redirecionando para %s em %s:%d...%n", serverName, host, port);
+            System.out.printf("Redirecionando para %s em %s:%d...%n", serverName, host, port);
         }
 
         disconnect();

@@ -121,9 +121,9 @@ public class ClientImpl implements Client {
             System.out.println("⚠️  MALICIOUS MODE ENABLED ⚠️" );
         }
         if (DebugConfig.DEBUG_MODE) {
-            System.out.println("🐛 DEBUG MODE: ENABLED");
+            System.out.println(" DEBUG MODE: ENABLED");
         }
-        System.out.println("\n📋 Available Commands:");
+        System.out.println("\n Available Commands:");
         System.out.println("  REQUEST <serverName>           - Lookup DNS entry");
         if (isRegister) {
             System.out.println("  REGISTER <serverName> <ip>     - Update DNS entry");

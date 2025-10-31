@@ -13,6 +13,7 @@
     <module>module-2</module>
     <module>module-3</module>
     <module>lanterna-tui</module>
+    <module>lanterna-gui</module>
   </modules>
 
   <dependencies>
